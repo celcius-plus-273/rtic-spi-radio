@@ -133,7 +133,7 @@ impl<SPI, CS, RESET, DELAY, E> LoRa<SPI, CS, RESET, DELAY>
         self.write_register(Register::RegFifoAddrPtr.addr(), 0)?;
         self.write_register(Register::RegPayloadLength.addr(), 0)?;
 
-        for byte in buffer.iter().take(payload_size){
+        for byte in buffer.iter().take(payload_size) {
             self.write_register(Register::RegFifo.addr(), *byte)?;
         }
 
@@ -207,9 +207,10 @@ impl<SPI, CS, RESET, DELAY, E> LoRa<SPI, CS, RESET, DELAY>
 
     /// Returns the contents of the fifo as a fixed 255 u8 array. This should only be called is there is a
     /// new packet ready to be read.
-    pub fn read_packet(&mut self, size: usize) -> Result<[u8; 255], Error<E, CS::Error, RESET::Error>> {
+    pub fn read_packet(&mut self) -> Result<[u8; 255], Error<E, CS::Error, RESET::Error>> {
         
         // create buffer to store received data
+        let nbytes = self.read_register(Register::RegRxNbBytes.addr())?;
         let mut buffer = [0 as u8; 255];
 
         // set pointer to beginning of packet
@@ -217,7 +218,7 @@ impl<SPI, CS, RESET, DELAY, E> LoRa<SPI, CS, RESET, DELAY>
         self.write_register(Register::RegFifoAddrPtr.addr(), fifo_addr)?;
 
         // read the packet and store it in the buffer
-        for i in 0..size {
+        for i in 0..nbytes {
             let byte = self.read_register(Register::RegFifo.addr())?;
             buffer[i as usize] = byte;
         }
@@ -226,14 +227,14 @@ impl<SPI, CS, RESET, DELAY, E> LoRa<SPI, CS, RESET, DELAY>
         self.clear_irq()?;
 
         // reset the fifo queue pointer
-        self.write_register(Register::RegFifoAddrPtr.addr(), 0)?;
+        self.write_register(Register::RegFifoAddrPtr.addr(), 0)?;   
 
         // return buffer
         Ok(buffer)
     }
 
     /// Returns true if the radio is currently transmitting a packet.
-    pub fn transmitting(&mut self) -> Result<bool, Error<E, CS::Error, RESET::Error>> {
+    fn transmitting(&mut self) -> Result<bool, Error<E, CS::Error, RESET::Error>> {
         if (self.read_register(Register::RegOpMode.addr())? & RadioMode::Tx.addr())
             == RadioMode::Tx.addr() {
             Ok(true)
@@ -249,7 +250,7 @@ impl<SPI, CS, RESET, DELAY, E> LoRa<SPI, CS, RESET, DELAY>
 
     /// Clears the radio's IRQ registers.
     pub fn clear_irq(&mut self) -> Result<(), Error<E, CS::Error, RESET::Error>> {
-        // reads current flags a nd any flag that's ON is cleared by rewriting it
+        // reads current flags and any flag that's ON is cleared by rewriting it
         let irq_flags = self.read_register(Register::RegIrqFlags.addr())?;
         self.write_register(Register::RegIrqFlags.addr(), irq_flags)?;
 
@@ -490,6 +491,10 @@ impl<SPI, CS, RESET, DELAY, E> LoRa<SPI, CS, RESET, DELAY>
         Ok(f_error as i64)
     }
 
+    pub fn get_radio_version(&mut self) -> Result<u8, Error<E, CS::Error, RESET::Error>> {
+        Ok(self.read_register(Register::RegVersion.addr())?)
+    }
+
     fn set_ldo_flag(&mut self) -> Result<(), Error<E, CS::Error, RESET::Error>> {
         let sw = self.get_signal_bandwidth()?;
         // Section 4.1.1.5
@@ -548,4 +553,3 @@ impl RadioMode {
         self as u8
     }
 }
-

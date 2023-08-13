@@ -41,7 +41,7 @@ mod app {
     const SYST_MONO_FACTOR: u32 = 10;
 
     // delay in miliseconds
-    const DELAY_MS: u32 = SYST_MONO_FACTOR * 1000;
+    const DELAY_MS: u32 = SYST_MONO_FACTOR * 3000;
 
     // type definition for Led :)
     // this simplifies local and shared resource definitions
@@ -155,7 +155,6 @@ mod app {
     async fn talk_to_radio(cx: talk_to_radio::Context) {
         let spi = cx.local.spi;
 
-        loop {
             Systick::delay(DELAY_MS.millis()).await;
             log::info!("asking for radio's version...");
 
@@ -169,7 +168,6 @@ mod app {
 
             // print ther result onto the usb serial port
             log::info!("radio's version is: {:#04x}. Expected version: 0x12", result[1] as u8);
-        }
     }
 
 }

@@ -49,7 +49,6 @@ mod app {
 
     // delay in miliseconds
     const DELAY_MS: u32 = SYST_MONO_FACTOR * 2000;
-    const LONG_DELAY: u32 = SYST_MONO_FACTOR * 10_000;
 
     // FREQUENCY for LoRa
     const FREQUENCY: i64 = 915;
@@ -218,44 +217,11 @@ mod app {
 
             log::info!("Succesfully init LoRa!");
 
-            //////////////////////////////////////////////////////////////////////
-            //// We're testing Transmitting so no need to setup as receive :) ////
-            //////////////////////////////////////////////////////////////////////
-            // match lora.set_mode(RadioMode::RxContinuous) {
-            //     Ok(_) => log::info!("Lora is listening..."),
-            //     Err(_) => panic!("Couldn't set radio to RxContinuos"),
-            // };
-            //////////////////////////////////////////////////////////////////////
+            match lora.set_mode(RadioMode::RxContinuous) {
+                Ok(_) => log::info!("Lora is listening..."),
+                Err(_) => panic!("Couldn't set radio to RxContinuos"),
+            };      
         });
-
-        // calls the sender task
-        sender::spawn().unwrap();
-    }
-
-    #[task(shared = [lora], priority = 1)]
-    async fn sender(cx: sender::Context) {
-        let mut lora = cx.shared.lora;
-
-        // pack the message into an u8 array
-        let message = "IT WORKS!!";
-        let mut buffer = [0;255];
-        for (i,c) in message.chars().enumerate() {
-            buffer[i] = c as u8;
-        }
-
-        loop {
-            // transmit using blocking function
-            log::info!("Sending... message: {message}");
-
-            lora.lock(|lora| {
-                match lora.transmit_payload_busy(buffer, message.len()) {
-                    Ok(packet_size) => log::info!("Sent packet with size: {}", packet_size),
-                    Err(_) => panic!("Error sending packet x.x"),
-                };
-            });
-            
-            Systick::delay(LONG_DELAY.millis()).await;
-        }
     }
 
     // RECEIVE VIA INTERRUPT!
