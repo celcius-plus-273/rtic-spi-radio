@@ -1,0 +1,3 @@
+cargo:rustc-link-search=/home/kei_h/teensy/radio/rtic-spi-radio/target/debug/build/imxrt-ral-ed1b66acab7cf093/out
+cargo:rerun-if-changed=src/imxrt1062.x
+cargo:rerun-if-changed=build.rs

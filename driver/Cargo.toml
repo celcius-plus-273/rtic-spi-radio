@@ -1,0 +1,13 @@
+[package]
+name = "sx127x_lora"
+version = "0.3.1"
+authors = ["Charles Wade <charles.wade@rockets.utoledo.edu>"]
+edition = "2018"
+
+[dependencies]
+embedded-hal = "~0.2"
+bit_field = "~0.10"
+
+[features]
+version_0x09 = []
+default = []

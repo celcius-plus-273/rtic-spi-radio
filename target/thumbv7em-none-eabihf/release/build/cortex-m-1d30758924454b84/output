@@ -1,0 +1,6 @@
+cargo:rustc-link-lib=static=cortex-m
+cargo:rustc-link-search=/home/kei_h/teensy/radio/rtic-spi-radio/target/thumbv7em-none-eabihf/release/build/cortex-m-1d30758924454b84/out
+cargo:rustc-cfg=cortex_m
+cargo:rustc-cfg=armv7m
+cargo:rustc-cfg=armv7em
+cargo:rustc-cfg=has_fpu

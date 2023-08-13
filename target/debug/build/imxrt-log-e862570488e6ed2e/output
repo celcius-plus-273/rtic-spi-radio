@@ -1,0 +1,3 @@
+cargo:rerun-if-env-changed=IMXRT_LOG_USB_BULK_MPS
+cargo:rerun-if-env-changed=IMXRT_LOG_USB_SPEED
+cargo:rerun-if-env-changed=IMXRT_LOG_BUFFER_SIZE

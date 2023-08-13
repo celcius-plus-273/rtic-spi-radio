@@ -1,0 +1,11 @@
+/home/kei_h/teensy/radio/rtic-spi-radio/target/thumbv7em-none-eabihf/release/deps/teensy4_pins-f3a65d7877093614.rmeta: /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/lib.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/common.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/t40.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/t41.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/tmm.rs
+
+/home/kei_h/teensy/radio/rtic-spi-radio/target/thumbv7em-none-eabihf/release/deps/libteensy4_pins-f3a65d7877093614.rlib: /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/lib.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/common.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/t40.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/t41.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/tmm.rs
+
+/home/kei_h/teensy/radio/rtic-spi-radio/target/thumbv7em-none-eabihf/release/deps/teensy4_pins-f3a65d7877093614.d: /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/lib.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/common.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/t40.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/t41.rs /home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/tmm.rs
+
+/home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/lib.rs:
+/home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/common.rs:
+/home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/t40.rs:
+/home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/t41.rs:
+/home/kei_h/.cargo/registry/src/index.crates.io-6f17d22bba15001f/teensy4-pins-0.3.1/src/tmm.rs:

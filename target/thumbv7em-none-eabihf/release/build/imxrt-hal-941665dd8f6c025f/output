@@ -1,0 +1,2 @@
+cargo:rustc-cfg=family="imxrt10xx"
+cargo:rustc-cfg=chip="imxrt1060"
