@@ -1,4 +1,4 @@
-# TEENSY4-RTIC-TEMPLATE
+# RUST RFM95W SPI RADIO
 
 Template for a teensy 4.0/4.1 rust RTIC embedded project
 
