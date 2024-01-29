@@ -12,6 +12,7 @@ use teensy4_panic as _; // allows program to panic and print panic messages
 use teensy4_pins::common::*; // pad to pin definitions
 use bsp::hal::gpio::{self, Trigger}; // gpio module
 use bsp::hal::gpt::Gpt1; // tpye definition for GPT1
+use bsp::hal::gpt::Gpt2;
 use bsp::hal::timer::Blocking;
 ////////////////////////////////////////
 
@@ -34,7 +35,7 @@ use bsp::hal::gpt::ClockSource;
 #[app(
     device = bsp, 
     peripherals = true, 
-    dispatchers = [GPT2]
+    dispatchers = [ADC1]
 )]
 mod app {
 
@@ -55,9 +56,10 @@ mod app {
     const FREQUENCY: i64 = 915;
 
     // timer stuff
-    const GPT1_FREQUENCY: u32 = 1_000;
+    const GPT1_FREQUENCY: u32 = 10_000;
     const GPT1_CLOCK_SOURCE: ClockSource = ClockSource::HighFrequencyReferenceClock;
     const GPT1_DIVIDER: u32 = board::PERCLK_FREQUENCY / GPT1_FREQUENCY;
+
 
     // type definition for Led :)
     // this simplifies local and shared resource definitions
@@ -78,6 +80,7 @@ mod app {
     struct Shared {
         counter: u32,
         lora: Lora_Radio,
+        gpt2: Gpt2,
     }
 
     // entry point of the "program"
@@ -98,6 +101,7 @@ mod app {
             lpspi4,
             // for blocking delays :)
             mut gpt1,
+            mut gpt2,
             ..
         } = board::t40(cx.device);
 
@@ -113,6 +117,12 @@ mod app {
         gpt1.set_divider(GPT1_DIVIDER);
         gpt1.set_clock_source(GPT1_CLOCK_SOURCE);
         let mut delay = Blocking::<_, GPT1_FREQUENCY>::from_gpt(gpt1);
+
+        // gpt2 as delay counter :)
+        gpt2.disable();
+        gpt2.set_divider(GPT1_DIVIDER);
+        gpt2.set_clock_source(GPT1_CLOCK_SOURCE);
+        gpt2.set_reset_on_enable(true);
 
         // RX DONE Interrupt setup
         let rxInt = gpio1.input(pins.p1);
@@ -159,7 +169,7 @@ mod app {
 
         // return the local, and shared resources to be used from the context
         (
-            Shared {counter, lora},
+            Shared {counter, lora, gpt2},
             Local {led, rxInt}
         )
     }
@@ -232,45 +242,65 @@ mod app {
         sender::spawn().unwrap();
     }
 
-    #[task(shared = [lora], priority = 1)]
+    #[task(shared = [lora, gpt2], priority = 1)]
     async fn sender(cx: sender::Context) {
         let mut lora = cx.shared.lora;
+        let mut gpt2 = cx.shared.gpt2;
 
         // pack the message into an u8 array
-        let message = "1234567890123456789012";
+        let message = "Hello from radio!";
         let mut buffer = [0;255];
         for (i,c) in message.chars().enumerate() {
             buffer[i] = c as u8;
         }
 
-        loop {
-            // transmit using blocking function
-            log::info!("Sending... message: {message}");
+        // slight delay
+        Systick::delay(DELAY_MS.millis()).await;
 
-            lora.lock(|lora| {
-                match lora.transmit_payload_busy(buffer, message.len()) {
-                    Ok(packet_size) => log::info!("Sent packet with size: {}", packet_size),
-                    Err(_) => panic!("Error sending packet x.x"),
-                };
-            });
-            
-            Systick::delay(DELAY_MS.millis()).await;
-        }
+        // transmit using blocking function
+        log::info!("Sending... message: {message}");
+
+        // start the timer
+        gpt2.lock(|gpt2| {
+            gpt2.enable();
+        });
+
+        lora.lock(|lora| {
+            // actually transmit the message
+            match lora.transmit_payload_busy(buffer, message.len()) {
+                Ok(packet_size) => log::info!("Sent packet with size: {}", packet_size),
+                Err(_) => panic!("Error sending packet..."),
+            };
+
+            // switch to receive mode
+            match lora.set_mode(RadioMode::RxContinuous) {
+                Ok(_) => log::info!("listening for ack..."),
+                Err(_) => panic!("Couldn't set radio to RX mode!"),
+            };
+        });
     }
 
     // RECEIVE VIA INTERRUPT!
     #[task(binds = GPIO1_COMBINED_0_15, local = [rxInt], shared = [lora, gpt2])]
     fn receive_data(cx: receive_data::Context) {
         let mut lora = cx.shared.lora;
-
+        let mut gpt2 = cx.shared.gpt2;
 
         /// Interrupt is being triggered twice... not sure why
         /// maybe just add a boolean check?
-        /// When adding a slight delaya it doesn't get triggered twice anymore...
+        /// When adding a slight delay it doesn't get triggered twice anymore...
         /// I think the radio is taking some time itself to clear the RxDone irq
         /// Added a slight delay to compensate for that
-        log::info!("Interrupt triggered!");
+        //log::info!("Interrupt triggered!");
         
+        // get the timer count
+        let mut count: f32 = 0.0;
+        gpt2.lock(|gpt2| {
+            count = gpt2.count() as f32;
+            gpt2.disable();
+        });
+
+        log::info!("round-trip transmission delay: {} ms", (count * (1.0 / (GPT1_FREQUENCY as f32)) * 1000.0));
 
         // read the data in the buffer
         lora.lock(|lora| {
@@ -288,6 +318,10 @@ mod app {
 
         // clear the rxInt flag
         cx.local.rxInt.clear_triggered();
+
+        // spawn sender task to loop again!
+        sender::spawn().unwrap();
+
     }
 }
 

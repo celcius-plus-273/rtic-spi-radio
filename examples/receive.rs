@@ -252,6 +252,37 @@ mod app {
 
         // clear the rxInt flag
         cx.local.rxInt.clear_triggered();
+
+        sender::spawn().unwrap();
     }
+
+    #[task(shared = [lora], priority = 1)]
+    async fn sender(cx: sender::Context) {
+        let mut lora = cx.shared.lora;
+
+        // pack the message into an u8 array
+        let message = "ACK from radio!";
+        let mut buffer = [0;255];
+        for (i,c) in message.chars().enumerate() {
+            buffer[i] = c as u8;
+        }
+
+        // transmit using blocking function
+        log::info!("Sending... message: {message}");
+
+        lora.lock(|lora| {
+            match lora.transmit_payload_busy(buffer, message.len()) {
+                Ok(packet_size) => log::info!("Sent packet with size: {}", packet_size),
+                Err(_) => panic!("Error sending packet x.x"),
+            };
+
+            // go back to receive mode!
+            match lora.set_mode(RadioMode::RxContinuous) {
+                Ok(_) => log::info!("Lora is listening..."),
+                Err(_) => panic!("Couldn't set radio to RxContinuos"),
+            };      
+        });
+
+}
 }
 
